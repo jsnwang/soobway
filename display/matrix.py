@@ -70,7 +70,7 @@ class MatrixRenderer:
     def render(self, subway_arrivals: list[dict], bus_arrivals: list[dict]):
         self.canvas.Clear()
         self._draw_subway_row(subway_arrivals, y_offset=0)
-        self._draw_bus_row(bus_arrivals, y_offset=18)
+        self._draw_bus_row(bus_arrivals, y_offset=14)
         self._draw_clock()
         self.canvas = self.matrix.SwapOnVSync(self.canvas)
 
@@ -91,10 +91,10 @@ class MatrixRenderer:
         cx, cy = 8, y_offset + 8
         _draw_filled_circle(self.canvas, cx, cy, 6, r, g, b)
 
-        # White letter centered inside circle (5x8 font)
+        # White letter centered inside circle (4x6 font — smaller for better centering)
         letter_x = cx - 2
-        letter_y = cy + 4
-        graphics.DrawText(self.canvas, self.font_md, letter_x, letter_y, white, line)
+        letter_y = cy + 3
+        graphics.DrawText(self.canvas, self.font_sm, letter_x, letter_y, white, line)
 
         # Primary time in 6x10, vertically centered with circle (baseline y=13)
         mins = first["minutes_away"]
@@ -118,7 +118,7 @@ class MatrixRenderer:
     def _draw_bus_row(self, arrivals: list[dict], y_offset: int):
         """Draw bus row: Q98 15m          8m  (red if delayed)"""
         white = graphics.Color(255, 255, 255)
-        dim = graphics.Color(100, 100, 100)
+        dim = graphics.Color(160, 160, 160)
         bus_color = graphics.Color(0, 119, 187)
 
         # "Q98" label in 5x8
@@ -145,7 +145,7 @@ class MatrixRenderer:
 
     def _draw_clock(self):
         """Draw tiny clock in bottom-right corner."""
-        dim = graphics.Color(60, 60, 60)
+        dim = graphics.Color(100, 100, 100)
         clock_str = _time.strftime("%H:%M")
         clock_width = len(clock_str) * 5
         graphics.DrawText(self.canvas, self.font_sm, self.cols - clock_width, 31, dim, clock_str)
