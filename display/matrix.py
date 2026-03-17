@@ -137,10 +137,10 @@ class MatrixRenderer:
         bus_color = graphics.Color(0, 119, 187)
 
         # "Q98" label in 5x8, centered in label zone (0 to TIME_X-1)
-        graphics.DrawText(self.canvas, self.font_md, 1, y_offset + 13, bus_color, "Q98")
+        graphics.DrawText(self.canvas, self.font_md, 1, y_offset + 12, bus_color, "Q98")
 
         if not arrivals:
-            graphics.DrawText(self.canvas, self.font_md, TIME_X, y_offset + 10, dim, "No buses")
+            graphics.DrawText(self.canvas, self.font_md, TIME_X, y_offset + 12, dim, "No buses")
             return
 
         first = arrivals[0]
