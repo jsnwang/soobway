@@ -84,7 +84,7 @@ class MatrixRenderer:
         dim = graphics.Color(100, 100, 100)
 
         if not arrivals:
-            graphics.DrawText(self.canvas, self.font_sm, 2, y_offset + 10, dim, "No trains")
+            graphics.DrawText(self.canvas, self.font_md, 2, y_offset + 10, dim, "No trains")
             return
 
         first = arrivals[0]
@@ -125,7 +125,7 @@ class MatrixRenderer:
         graphics.DrawText(self.canvas, self.font_md, 2, y_offset + 10, bus_color, "Q98")
 
         if not arrivals:
-            graphics.DrawText(self.canvas, self.font_sm, TIME_X, y_offset + 8, dim, "No buses")
+            graphics.DrawText(self.canvas, self.font_md, TIME_X, y_offset + 10, dim, "No buses")
             return
 
         first = arrivals[0]
