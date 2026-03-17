@@ -69,9 +69,9 @@ class MatrixRenderer:
                 "Use TerminalRenderer for development."
             )
         self.cols = cols
-        self.matrix = RGBMatrix(options=_make_options(rows, cols, chain, brightness))
-        self.canvas = self.matrix.CreateFrameCanvas()
 
+        # Load fonts BEFORE creating the matrix — RGBMatrix drops privileges
+        # after init, which can prevent file access.
         self.font_lg = graphics.Font()
         self.font_lg.LoadFont(os.path.join(FONT_DIR, "6x10.bdf"))
 
@@ -80,6 +80,9 @@ class MatrixRenderer:
 
         self.font_sm = graphics.Font()
         self.font_sm.LoadFont(os.path.join(FONT_DIR, "4x6.bdf"))
+
+        self.matrix = RGBMatrix(options=_make_options(rows, cols, chain, brightness))
+        self.canvas = self.matrix.CreateFrameCanvas()
 
     def render(self, subway_arrivals: list[dict], bus_arrivals: list[dict]):
         self.canvas.Clear()
