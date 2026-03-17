@@ -16,7 +16,7 @@ except ImportError:
 FONT_DIR = os.getenv("FONT_DIR", os.path.join(os.path.dirname(__file__), "..", "fonts"))
 
 # Column where times start (both rows aligned)
-TIME_X = 18
+TIME_X = 17
 
 # Delay color
 RED = (255, 40, 40)
@@ -87,8 +87,8 @@ class MatrixRenderer:
 
     def render(self, subway_arrivals: list[dict], bus_arrivals: list[dict]):
         self.canvas.Clear()
-        self._draw_subway_row(subway_arrivals, y_offset=0)
-        self._draw_bus_row(bus_arrivals, y_offset=12)
+        self._draw_subway_row(subway_arrivals, y_offset=-1)
+        self._draw_bus_row(bus_arrivals, y_offset=10)
         self._draw_clock()
         self.canvas = self.matrix.SwapOnVSync(self.canvas)
 
@@ -105,8 +105,8 @@ class MatrixRenderer:
         line = first["line"]
         r, g, b = LINE_COLORS.get(line, (255, 255, 255))
 
-        # 12×12 circle icon at (2, y+2)
-        icon_x, icon_y = 2, y_offset + 2
+        # 12×12 circle icon at (1, y+2)
+        icon_x, icon_y = 1, y_offset + 2
         _draw_subway_icon(self.canvas, icon_x, icon_y, r, g, b)
 
         # Letter centered in 12×12 icon: 4px wide → 4px pad each side, 6px tall → 3px pad each side
@@ -136,8 +136,8 @@ class MatrixRenderer:
         dim = graphics.Color(160, 160, 160)
         bus_color = graphics.Color(0, 119, 187)
 
-        # "Q98" label in 5x8
-        graphics.DrawText(self.canvas, self.font_md, 2, y_offset + 10, bus_color, "Q98")
+        # "Q98" label in 5x8, centered in label zone (0 to TIME_X-1)
+        graphics.DrawText(self.canvas, self.font_md, 1, y_offset + 10, bus_color, "Q98")
 
         if not arrivals:
             graphics.DrawText(self.canvas, self.font_md, TIME_X, y_offset + 10, dim, "No buses")
@@ -159,40 +159,8 @@ class MatrixRenderer:
             graphics.DrawText(self.canvas, self.font_lg, nxt_x, y_offset + 12, nxt_color, nxt_str)
 
     def _draw_clock(self):
-        """Draw 7-segment style clock in bottom-right corner."""
-        r, g, b = 180, 180, 180
+        """Draw clock in bottom-right corner using 6x10 font."""
+        dim = graphics.Color(180, 180, 180)
         clock_str = _time.strftime("%H:%M")
-
-        # 3×7 pixel bitmaps — proper 7-segment with symmetric upper/lower halves
-        # Row 0: top bar, rows 1-2: upper verticals, row 3: middle bar,
-        # rows 4-5: lower verticals, row 6: bottom bar
-        SEGS = {
-            "0": [0b111, 0b101, 0b101, 0b000, 0b101, 0b101, 0b111],
-            "1": [0b010, 0b010, 0b010, 0b000, 0b010, 0b010, 0b010],
-            "2": [0b111, 0b001, 0b001, 0b111, 0b100, 0b100, 0b111],
-            "3": [0b111, 0b001, 0b001, 0b111, 0b001, 0b001, 0b111],
-            "4": [0b000, 0b101, 0b101, 0b111, 0b001, 0b001, 0b000],
-            "5": [0b111, 0b100, 0b100, 0b111, 0b001, 0b001, 0b111],
-            "6": [0b111, 0b100, 0b100, 0b111, 0b101, 0b101, 0b111],
-            "7": [0b111, 0b001, 0b001, 0b000, 0b001, 0b001, 0b001],
-            "8": [0b111, 0b101, 0b101, 0b111, 0b101, 0b101, 0b111],
-            "9": [0b111, 0b101, 0b101, 0b111, 0b001, 0b001, 0b111],
-            ":": [0b0, 0b0, 0b1, 0b0, 0b1, 0b0, 0b0],
-        }
-
-        # Total width: 4 digits × (3+1) + colon (1+1) - trailing gap = 17px
-        total_w = 4 * 4 + 1 + 1 - 1
-        x0 = self.cols - total_w - RIGHT_PAD
-        y0 = 25  # 7px tall → rows 25-31
-
-        cx = x0
-        for ch in clock_str:
-            bitmap = SEGS.get(ch)
-            if bitmap is None:
-                continue
-            w = 1 if ch == ":" else 3
-            for dy, row in enumerate(bitmap):
-                for dx in range(w):
-                    if row & (1 << (w - 1 - dx)):
-                        self.canvas.SetPixel(cx + dx, y0 + dy, r, g, b)
-            cx += w + 1
+        clock_width = len(clock_str) * 6
+        graphics.DrawText(self.canvas, self.font_lg, self.cols - clock_width - RIGHT_PAD, 31, dim, clock_str)
