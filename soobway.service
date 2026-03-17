@@ -1,0 +1,17 @@
+[Unit]
+Description=soobway NYC subway/bus arrival display
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/cleo/soobway
+Environment=DISPLAY_MODE=matrix
+Environment=REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+ExecStart=/home/cleo/soobway/.venv/bin/python main.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
