@@ -115,11 +115,11 @@ class MatrixRenderer:
         letter_y = icon_y + 9  # 3px top pad + 6px glyph = baseline at y+9
         graphics.DrawText(self.canvas, self.font_md, letter_x, letter_y, white, line)
 
-        # Primary time in 6x10, vertically centered with circle (baseline y=13)
+        # Primary time in 6x10, vertically centered with 12×12 circle (center y+8)
         mins = first["minutes_away"]
         time_str = "Now" if mins == 0 else f"{mins}m"
         time_color = graphics.Color(*RED) if first.get("delayed") else white
-        graphics.DrawText(self.canvas, self.font_lg, TIME_X, y_offset + 13, time_color, time_str)
+        graphics.DrawText(self.canvas, self.font_lg, TIME_X, y_offset + 12, time_color, time_str)
 
         # Next train — right-aligned in 6x10, yellow (red if delayed)
         if len(arrivals) >= 2:
@@ -128,7 +128,7 @@ class MatrixRenderer:
             nxt_width = len(nxt_str) * 6
             nxt_x = self.cols - nxt_width - RIGHT_PAD
             nxt_color = graphics.Color(*RED) if nxt.get("delayed") else graphics.Color(*YELLOW)
-            graphics.DrawText(self.canvas, self.font_lg, nxt_x, y_offset + 13, nxt_color, nxt_str)
+            graphics.DrawText(self.canvas, self.font_lg, nxt_x, y_offset + 12, nxt_color, nxt_str)
 
     def _draw_bus_row(self, arrivals: list[dict], y_offset: int):
         """Draw bus row: Q98 15m          8m  (red if delayed)"""
