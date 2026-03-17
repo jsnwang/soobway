@@ -24,7 +24,7 @@ LINE_COLORS = {
 class TerminalRenderer:
     """Renders arrivals to the terminal for development/simulation."""
 
-    def render(self, subway_arrivals: list[dict], bus_arrivals: list[dict]):
+    def render(self, subway_arrivals: list[dict], bus_arrivals: list[dict], notice: str = ""):
         os.system("cls" if os.name == "nt" else "clear")
 
         # Subway row
@@ -58,7 +58,9 @@ class TerminalRenderer:
         else:
             print("  No buses")
 
-        print(f"{'':>34}{time.strftime('%H:%M')}")
+        if notice:
+            print(f"  {notice}")
+        print(f"{'':>34}{time.strftime('%I:%M').lstrip('0')}")
 
 
 def get_renderer(mode: str = "terminal"):

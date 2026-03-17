@@ -88,10 +88,12 @@ class MatrixRenderer:
         self.matrix = RGBMatrix(options=_make_options(rows, cols, chain, brightness))
         self.canvas = self.matrix.CreateFrameCanvas()
 
-    def render(self, subway_arrivals: list[dict], bus_arrivals: list[dict]):
+    def render(self, subway_arrivals: list[dict], bus_arrivals: list[dict], notice: str = ""):
         self.canvas.Clear()
         self._draw_subway_row(subway_arrivals, y_offset=-1)
         self._draw_bus_row(bus_arrivals, y_offset=10)
+        if notice:
+            self._draw_notice(notice)
         self._draw_clock()
         self.canvas = self.matrix.SwapOnVSync(self.canvas)
 
@@ -161,6 +163,20 @@ class MatrixRenderer:
             nxt_color = graphics.Color(*RED) if nxt.get("delayed") else graphics.Color(*YELLOW)
             graphics.DrawText(self.canvas, self.font_lg, nxt_x, y_offset + 12, nxt_color, nxt_str)
 
+    def _draw_notice(self, notice: str):
+        """Draw scrolling notice text in the bottom row, left of clock."""
+        yellow = graphics.Color(*YELLOW)
+        char_w = 6  # font_clock character width
+        text_width = len(notice) * char_w
+
+        # Scroll: text enters from right, exits left, then wraps
+        speed = 40  # pixels per second
+        scroll_range = text_width + self.cols
+        scroll_pos = int(_time.time() * speed) % scroll_range
+        text_x = self.cols - scroll_pos
+
+        graphics.DrawText(self.canvas, self.font_clock, text_x, 31, yellow, notice)
+
     def _draw_clock(self):
         """Draw clock in bottom-right corner: digits in 6x9 with tight spacing, hand-drawn 2×2 colon."""
         r, g, b = 180, 180, 180
@@ -176,7 +192,14 @@ class MatrixRenderer:
         minute_w = 2 * char_w
         total_w = hour_w + colon_w + minute_w
 
-        x = self.cols - total_w - RIGHT_PAD
+        clock_x = self.cols - total_w - RIGHT_PAD
+
+        # Clear clock area so scrolling notice doesn't bleed through
+        for cy in range(23, 32):
+            for cx in range(max(0, clock_x - 2), self.cols):
+                self.canvas.SetPixel(cx, cy, 0, 0, 0)
+
+        x = clock_x
         baseline = 31
 
         # Hour digits — render one at a time for tight spacing
