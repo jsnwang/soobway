@@ -23,7 +23,7 @@ RED = (255, 40, 40)
 YELLOW = (252, 204, 10)
 
 # Right padding for next-time text
-RIGHT_PAD = 2
+RIGHT_PAD = 1
 
 
 def _make_options(rows: int = 32, cols: int = 64, chain: int = 1, brightness: int = 50) -> "RGBMatrixOptions":
