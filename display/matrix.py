@@ -162,32 +162,37 @@ class MatrixRenderer:
             graphics.DrawText(self.canvas, self.font_lg, nxt_x, y_offset + 12, nxt_color, nxt_str)
 
     def _draw_clock(self):
-        """Draw clock in bottom-right corner: digits in 6x9, hand-drawn 2×2 colon."""
+        """Draw clock in bottom-right corner: digits in 6x9 with tight spacing, hand-drawn 2×2 colon."""
         r, g, b = 180, 180, 180
         dim = graphics.Color(r, g, b)
 
         hour = str(int(_time.strftime("%I")))  # 12-hour, no leading zero
         minute = _time.strftime("%M")
 
-        # Layout: [hour][gap][::][gap][minute] right-aligned
-        hour_w = len(hour) * 6
+        # Tight layout: digits at 5px pitch (trimmed from 6px cell), colon 4px
+        char_w = 5
+        hour_w = len(hour) * char_w
         colon_w = 4  # 1px gap + 2px dots + 1px gap
-        minute_w = 12  # always 2 digits × 6px
+        minute_w = 2 * char_w
         total_w = hour_w + colon_w + minute_w
 
         x = self.cols - total_w - RIGHT_PAD
         baseline = 31
 
-        # Hour digits
-        graphics.DrawText(self.canvas, self.font_clock, x, baseline, dim, hour)
-        x += hour_w + 1  # 1px gap before dots
+        # Hour digits — render one at a time for tight spacing
+        for ch in hour:
+            graphics.DrawText(self.canvas, self.font_clock, x, baseline, dim, ch)
+            x += char_w
+        x += 1  # 1px gap before dots
 
-        # 2×2 colon dots — vertically centered in 9px font (spans y=23–31)
+        # 2×2 colon dots
         for dy in (0, 1):
             for dx in (0, 1):
-                self.canvas.SetPixel(x + dx, 25 + dy, r, g, b)  # upper dot
-                self.canvas.SetPixel(x + dx, 29 + dy, r, g, b)  # lower dot
+                self.canvas.SetPixel(x + dx, 25 + dy, r, g, b)
+                self.canvas.SetPixel(x + dx, 29 + dy, r, g, b)
         x += 3  # 2px dots + 1px gap after
 
         # Minute digits
-        graphics.DrawText(self.canvas, self.font_clock, x, baseline, dim, minute)
+        for ch in minute:
+            graphics.DrawText(self.canvas, self.font_clock, x, baseline, dim, ch)
+            x += char_w
