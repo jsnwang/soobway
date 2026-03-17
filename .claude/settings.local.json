@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -sL \"https://raw.githubusercontent.com/hzeller/rpi-rgb-led-matrix/master/fonts/4x6.bdf\" -o \"c:/Users/cygfr/soobway/fonts/4x6.bdf\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/hzeller/rpi-rgb-led-matrix/master/fonts/5x8.bdf\" -o \"c:/Users/cygfr/soobway/fonts/5x8.bdf\")"
+    ]
+  }
+}

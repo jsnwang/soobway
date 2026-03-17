@@ -52,7 +52,8 @@ sudo make install-python PYTHON=$(which python3)
 ## Software Requirements
 
 - Python 3.11+
-- MTA API key — register at https://api.mta.info/
+- MTA BusTime API key — register at https://bt.mta.info/wiki/Developers/Index
+- Subway GTFS-RT feeds are public — no key needed
 
 ## Setup
 

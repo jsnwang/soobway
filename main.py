@@ -3,7 +3,8 @@ soobway — NYC subway arrival display for matrix boards.
 """
 import time
 import config
-from mta.feed import get_arrivals
+import mta.feed as subway
+import mta.bus as bus
 from display.renderer import get_renderer
 
 
@@ -11,19 +12,26 @@ def main():
     renderer = get_renderer(config.DISPLAY_MODE)
 
     while True:
-        all_arrivals = []
-        for stop in config.STOPS:
-            arrivals = get_arrivals(
-                api_key=config.MTA_API_KEY,
-                feed_id=stop["feed_id"],
+        subway_arrivals = []
+        for stop in config.SUBWAY_STOPS:
+            subway_arrivals.extend(subway.get_arrivals(
+                url=stop["url"],
                 stop_id=stop["stop_id"],
-                line=stop["line"],
-                direction=stop["direction"],
-            )
-            all_arrivals.extend(arrivals)
+                route_id=stop["route_id"],
+            ))
+        subway_arrivals.sort(key=lambda x: x["minutes_away"])
 
-        stop_name = config.STOPS[0]["name"] if config.STOPS else ""
-        renderer.render(all_arrivals, stop_name=stop_name)
+        bus_arrivals = []
+        for stop in config.BUS_STOPS:
+            bus_arrivals.extend(bus.get_arrivals(
+                api_key=config.BUSTIME_API_KEY,
+                stop_ref=stop["stop_ref"],
+                line=stop["line"],
+                direction_ref=stop["direction_ref"],
+            ))
+        bus_arrivals.sort(key=lambda x: x["minutes_away"])
+
+        renderer.render(subway_arrivals, bus_arrivals)
         time.sleep(config.REFRESH_INTERVAL)
 
 

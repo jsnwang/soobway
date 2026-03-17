@@ -24,20 +24,41 @@ LINE_COLORS = {
 class TerminalRenderer:
     """Renders arrivals to the terminal for development/simulation."""
 
-    def render(self, arrivals: list[dict], stop_name: str = ""):
+    def render(self, subway_arrivals: list[dict], bus_arrivals: list[dict]):
         os.system("cls" if os.name == "nt" else "clear")
-        header = f" {stop_name} " if stop_name else " Arrivals "
-        print(f"{'=' * 30}")
-        print(f"{header:^30}")
-        print(f"{'=' * 30}")
-        if not arrivals:
-            print("  No upcoming arrivals")
-        for a in arrivals:
-            mins = a["minutes_away"]
-            label = "Now" if mins == 0 else f"{mins} min"
-            print(f"  [{a['line']}]  {a['direction']}  {label:>6}")
-        print(f"{'=' * 30}")
-        print(f"  Updated: {time.strftime('%H:%M:%S')}")
+
+        # Subway row
+        if subway_arrivals:
+            first = subway_arrivals[0]
+            mins = first["minutes_away"]
+            label = "Now" if mins == 0 else f"{mins}m"
+            warn = " [!]" if first.get("delayed") else ""
+            line_str = f"  [{first['line']}] {label}{warn}"
+            if len(subway_arrivals) >= 2:
+                nxt = subway_arrivals[1]
+                nxt_str = f"{nxt['minutes_away']}m"
+                print(f"{line_str:<25}{nxt_str:>15}")
+            else:
+                print(line_str)
+        else:
+            print("  No trains")
+
+        # Bus row
+        if bus_arrivals:
+            first = bus_arrivals[0]
+            mins = first["minutes_away"]
+            label = "Now" if mins == 0 else f"{mins}m"
+            warn = " [!]" if first.get("delayed") else ""
+            line_str = f"  Q98 {label}{warn}"
+            if len(bus_arrivals) >= 2:
+                nxt_str = f"{bus_arrivals[1]['minutes_away']}m"
+                print(f"{line_str:<25}{nxt_str:>15}")
+            else:
+                print(line_str)
+        else:
+            print("  No buses")
+
+        print(f"{'':>34}{time.strftime('%H:%M')}")
 
 
 def get_renderer(mode: str = "terminal"):

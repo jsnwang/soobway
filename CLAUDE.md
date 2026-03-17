@@ -1,4 +1,4 @@
-# CLAUDE.md
+ # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -34,24 +34,27 @@ pytest tests/test_feed.py   # single test file
 The app has two main layers:
 
 **Data layer** (`mta/`)
-- `feed.py` — wraps the `nyct-gtfs` library to fetch and parse GTFS-RT protobuf feeds from the MTA API. `get_arrivals()` is the main entry point; it filters trips by stop ID and returns sorted arrival dicts.
+- `feed.py` — fetches subway GTFS-RT protobuf directly via `requests` + `gtfs-realtime-bindings`. No API key needed. `get_arrivals(url, stop_id, route_id)` filters by route and stop, returns arrival dicts.
+- `bus.py` — fetches bus arrivals from the MTA BusTime SIRI API (JSON). Requires `BUSTIME_API_KEY`. `get_arrivals(api_key, stop_ref, line, direction_ref)`.
 
 **Display layer** (`display/`)
 - `renderer.py` — `TerminalRenderer` for development; `get_renderer(mode)` factory.
 - `matrix.py` — `MatrixRenderer` wraps `rpi-rgb-led-matrix` for physical LED panels. Only works on Raspberry Pi; raises `RuntimeError` otherwise.
 
 **Configuration** (`config.py`)
-- All runtime settings come from environment variables loaded via `python-dotenv`. `STOPS` is a list of dicts that defines which stop/line/direction combos to display. Copy `.env.example` to `.env` and set `MTA_API_KEY`.
+- `SUBWAY_STOPS` — list of dicts with `url`, `stop_id`, `route_id`, `name`. Stop IDs use GTFS format with direction suffix (`S` = southbound = towards Manhattan).
+- `BUS_STOPS` — list of dicts with `stop_ref`, `line`, `direction_ref`, `name`. Uses BusTime stop IDs.
+- Only `BUSTIME_API_KEY` is required in `.env`; subway feeds are keyless.
 
 **Entry point** (`main.py`)
-- Loops every `REFRESH_INTERVAL` seconds: fetches arrivals for each stop in `config.STOPS`, merges results, renders.
+- Loops every `REFRESH_INTERVAL` seconds: fetches from all subway and bus stops, merges and sorts by `minutes_away`, renders.
 
 ## MTA API Notes
 
-- Feeds are protobuf GTFS-RT; `nyct-gtfs` handles decoding.
-- Feed IDs: `1`=1/2/3/4/5/6, `2`=A/C/E, `11`=B/D/F/M, `16`=N/Q/R/W, `21`=G, `26`=J/Z, `31`=7, `36`=L.
-- Stop IDs follow GTFS format: numeric ID + `N`/`S` direction suffix (e.g. `127N`).
-- API key registration: https://api.mta.info/
+- Subway GTFS-RT feeds require no API key — endpoints are public.
+- Bus uses MTA BusTime SIRI API (`mta/bus.py`) with `BUSTIME_API_KEY`.
+- Subway stop IDs: GTFS format, numeric ID + `N`/`S` suffix. Download `stops.txt` from https://api.mta.info to look up by station name.
+- BusTime stop refs: numeric only. Find at https://bustime.mta.info — search your stop, ID is in the URL.
 
 ## Hardware (actual build)
 

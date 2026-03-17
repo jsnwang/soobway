@@ -7,8 +7,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# MTA API key — get one at https://api.mta.info/
-MTA_API_KEY = os.environ["MTA_API_KEY"]
+# MTA BusTime API key — get one at https://bt.mta.info/wiki/Developers/Index
+# Subway GTFS-RT feeds require no API key.
+BUSTIME_API_KEY = os.environ["BUSTIME_API_KEY"]
 
 # Display mode: 'terminal' (dev) or 'matrix' (Raspberry Pi + LED panel)
 DISPLAY_MODE = os.getenv("DISPLAY_MODE", "terminal")
@@ -22,14 +23,40 @@ MATRIX_BRIGHTNESS = int(os.getenv("MATRIX_BRIGHTNESS", "50"))
 # Refresh interval in seconds
 REFRESH_INTERVAL = int(os.getenv("REFRESH_INTERVAL", "30"))
 
-# Stops to display: list of dicts with keys: feed_id, stop_id, line, direction, name
-# feed_id maps to MTA GTFS-RT feed numbers (see README for full list)
-STOPS = [
+# ---------------------------------------------------------------------------
+# Subway stops
+# url: MTA GTFS-RT feed endpoint (no API key needed)
+# stop_id: GTFS stop ID + direction suffix — 'S' = southbound = towards Manhattan
+#   To find your stop ID: download stops.txt from https://api.mta.info/#/subwayRealTimeFeeds
+#   and search for your station name. Append 'S' for Manhattan-bound.
+# route_id: exactly as it appears in the feed ('M', 'R', etc.)
+# ---------------------------------------------------------------------------
+SUBWAY_STOPS = [
     {
-        "feed_id": "1",
-        "stop_id": "127N",
-        "line": "1",
-        "direction": "N",
-        "name": "Times Sq Uptown",
+        "url": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-bdfm",
+        "stop_id": "G10S",  # 63 Dr-Rego Park, southbound (Manhattan-bound)
+        "route_id": "M",
+        "name": "M to Manhattan",
+    },
+    {
+        "url": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-nqrw",
+        "stop_id": "G10S",  # 63 Dr-Rego Park, southbound (Manhattan-bound)
+        "route_id": "R",
+        "name": "R to Manhattan",
+    },
+]
+
+# ---------------------------------------------------------------------------
+# Bus stops (MTA BusTime SIRI API)
+# stop_ref: numeric stop ID — find at https://bustime.mta.info (search your stop, copy ID from URL)
+# line: route number without prefix, e.g. 'Q98'
+# direction_ref: '0' or '1' — visit bustime.mta.info and check which direction goes towards Flushing
+# ---------------------------------------------------------------------------
+BUS_STOPS = [
+    {
+        "stop_ref": "502872",  # Horace Harding Expy/99 St
+        "line": "Q98",
+        "direction_ref": "0",  # towards Flushing
+        "name": "Q98 to Flushing",
     },
 ]
