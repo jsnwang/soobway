@@ -22,7 +22,7 @@ def _make_options(rows: int = 32, cols: int = 64, chain: int = 1, brightness: in
     options.cols = cols
     options.chain_length = chain
     options.brightness = brightness
-    options.hardware_mapping = "adafruit-hat"
+    options.hardware_mapping = "regular"
     options.gpio_slowdown = 4  # RPi 4 requires slowdown of 4
     options.drop_privileges = False
     return options
