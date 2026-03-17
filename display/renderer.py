@@ -32,7 +32,7 @@ class TerminalRenderer:
             first = subway_arrivals[0]
             mins = first["minutes_away"]
             label = "Now" if mins == 0 else f"{mins}m"
-            warn = " [!]" if first.get("delayed") else ""
+            warn = " [DELAYED]" if first.get("delayed") else ""
             line_str = f"  [{first['line']}] {label}{warn}"
             if len(subway_arrivals) >= 2:
                 nxt = subway_arrivals[1]
@@ -48,7 +48,7 @@ class TerminalRenderer:
             first = bus_arrivals[0]
             mins = first["minutes_away"]
             label = "Now" if mins == 0 else f"{mins}m"
-            warn = " [!]" if first.get("delayed") else ""
+            warn = " [DELAYED]" if first.get("delayed") else ""
             line_str = f"  Q98 {label}{warn}"
             if len(bus_arrivals) >= 2:
                 nxt_str = f"{bus_arrivals[1]['minutes_away']}m"
