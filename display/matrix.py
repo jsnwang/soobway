@@ -90,80 +90,97 @@ class MatrixRenderer:
 
     def render(self, subway_arrivals: list[dict], bus_arrivals: list[dict], notice: str = ""):
         self.canvas.Clear()
-        self._draw_subway_row(subway_arrivals, y_offset=-1)
-        self._draw_bus_row(bus_arrivals, y_offset=10)
+
+        hour = int(_time.strftime("%H"))
+        weekday = int(_time.strftime("%w"))  # 0=Sun, 1=Mon...6=Sat
+
+        # Night mode: blank display 12am-8am
+        if hour < 8:
+            self.canvas = self.matrix.SwapOnVSync(self.canvas)
+            return
+
+        # Brightness schedule: dim during workday hours and evenings
+        is_workday = 1 <= weekday <= 5 and 9 <= hour < 17
+        is_evening = hour >= 20
+        self.matrix.brightness = 20 if (is_workday or is_evening) else 50
+
+        # Pixel shift: toggle 0/1px every 4 hours to reduce LED aging
+        sx = (hour // 4) % 2
+        sy = (hour // 4) % 2
+
+        self._draw_subway_row(subway_arrivals, y_offset=-1, sx=sx, sy=sy)
+        self._draw_bus_row(bus_arrivals, y_offset=10, sx=sx, sy=sy)
         if notice:
-            self._draw_notice(notice)
-        self._draw_clock()
+            self._draw_notice(notice, sx=sx, sy=sy)
+        self._draw_clock(sx=sx, sy=sy)
         self.canvas = self.matrix.SwapOnVSync(self.canvas)
 
-    def _draw_subway_row(self, arrivals: list[dict], y_offset: int):
+    def _draw_subway_row(self, arrivals: list[dict], y_offset: int, sx: int = 0, sy: int = 0):
         """Draw subway row: [●R] 6m          12m  (red if delayed)"""
         white = graphics.Color(255, 255, 255)
         dim = graphics.Color(100, 100, 100)
 
         if not arrivals:
-            graphics.DrawText(self.canvas, self.font_md, 2, y_offset + 10, dim, "No trains")
+            graphics.DrawText(self.canvas, self.font_md, 2 + sx, y_offset + 10 + sy, dim, "No trains")
             return
 
         first = arrivals[0]
         line = first["line"]
         r, g, b = LINE_COLORS.get(line, (255, 255, 255))
 
-        # 12×12 circle icon at (1, y+2)
-        icon_x, icon_y = 1, y_offset + 2
+        # 12×12 circle icon
+        icon_x, icon_y = 1 + sx, y_offset + 2 + sy
         _draw_subway_icon(self.canvas, icon_x, icon_y, r, g, b)
 
-        # Letter centered in 12×12 icon: 4px wide → 4px pad each side, 6px tall → 3px pad each side
-        # 5x8 font baseline = top + ascent. Glyph is 4w×6h.
+        # Letter centered in 12×12 icon
         letter_x = icon_x + 4
-        letter_y = icon_y + 9  # 3px top pad + 6px glyph = baseline at y+9
+        letter_y = icon_y + 9
         graphics.DrawText(self.canvas, self.font_md, letter_x, letter_y, white, line)
 
-        # Primary time in 6x10, vertically centered with 12×12 circle (center y+8)
+        # Primary time in 6x10
         mins = first["minutes_away"]
         time_str = "Now" if mins == 0 else f"{mins}m"
         time_color = graphics.Color(*RED) if first.get("delayed") else white
-        graphics.DrawText(self.canvas, self.font_lg, TIME_X, y_offset + 12, time_color, time_str)
+        graphics.DrawText(self.canvas, self.font_lg, TIME_X + sx, y_offset + 12 + sy, time_color, time_str)
 
         # Next train — right-aligned in 6x10, yellow (red if delayed)
         if len(arrivals) >= 2:
             nxt = arrivals[1]
             nxt_str = f"{nxt['minutes_away']}m"
             nxt_width = len(nxt_str) * 6
-            nxt_x = self.cols - nxt_width - RIGHT_PAD
+            nxt_x = self.cols - nxt_width - RIGHT_PAD + sx
             nxt_color = graphics.Color(*RED) if nxt.get("delayed") else graphics.Color(*YELLOW)
-            graphics.DrawText(self.canvas, self.font_lg, nxt_x, y_offset + 12, nxt_color, nxt_str)
+            graphics.DrawText(self.canvas, self.font_lg, nxt_x, y_offset + 12 + sy, nxt_color, nxt_str)
 
-    def _draw_bus_row(self, arrivals: list[dict], y_offset: int):
+    def _draw_bus_row(self, arrivals: list[dict], y_offset: int, sx: int = 0, sy: int = 0):
         """Draw bus row: Q98 15m          8m  (red if delayed)"""
         white = graphics.Color(255, 255, 255)
         dim = graphics.Color(160, 160, 160)
         bus_color = graphics.Color(0, 119, 187)
 
         # "Q98" label in 5x8, centered in label zone (0 to TIME_X-1)
-        graphics.DrawText(self.canvas, self.font_md, 1, y_offset + 12, bus_color, "Q98")
+        graphics.DrawText(self.canvas, self.font_md, 1 + sx, y_offset + 12 + sy, bus_color, "Q98")
 
         if not arrivals:
-            graphics.DrawText(self.canvas, self.font_md, TIME_X, y_offset + 12, dim, "No buses")
+            graphics.DrawText(self.canvas, self.font_md, TIME_X + sx, y_offset + 12 + sy, dim, "No buses")
             return
 
         first = arrivals[0]
         mins = first["minutes_away"]
         time_str = "Now" if mins == 0 else f"{mins}m"
         time_color = graphics.Color(*RED) if first.get("delayed") else white
-        graphics.DrawText(self.canvas, self.font_lg, TIME_X, y_offset + 12, time_color, time_str)
+        graphics.DrawText(self.canvas, self.font_lg, TIME_X + sx, y_offset + 12 + sy, time_color, time_str)
 
         # Next bus — right-aligned in 6x10, yellow (red if delayed)
         if len(arrivals) >= 2:
             nxt = arrivals[1]
             nxt_str = f"{nxt['minutes_away']}m"
             nxt_width = len(nxt_str) * 6
-            nxt_x = self.cols - nxt_width - RIGHT_PAD
+            nxt_x = self.cols - nxt_width - RIGHT_PAD + sx
             nxt_color = graphics.Color(*RED) if nxt.get("delayed") else graphics.Color(*YELLOW)
-            graphics.DrawText(self.canvas, self.font_lg, nxt_x, y_offset + 12, nxt_color, nxt_str)
+            graphics.DrawText(self.canvas, self.font_lg, nxt_x, y_offset + 12 + sy, nxt_color, nxt_str)
 
-    def _draw_notice(self, notice: str):
+    def _draw_notice(self, notice: str, sx: int = 0, sy: int = 0):
         """Draw scrolling notice text in the bottom row, left of clock."""
         yellow = graphics.Color(200, 165, 8)
         char_w = 6  # font_clock character width
@@ -173,11 +190,11 @@ class MatrixRenderer:
         speed = 40  # pixels per second
         scroll_range = text_width + self.cols
         scroll_pos = int(_time.time() * speed) % scroll_range
-        text_x = self.cols - scroll_pos
+        text_x = self.cols - scroll_pos + sx
 
-        graphics.DrawText(self.canvas, self.font_clock, text_x, 31, yellow, notice)
+        graphics.DrawText(self.canvas, self.font_clock, text_x, 31 + sy, yellow, notice)
 
-    def _draw_clock(self):
+    def _draw_clock(self, sx: int = 0, sy: int = 0):
         """Draw clock in bottom-right corner: digits in 6x9 with tight spacing, hand-drawn 2×2 colon."""
         r, g, b = 150, 150, 150
         dim = graphics.Color(r, g, b)
@@ -192,15 +209,16 @@ class MatrixRenderer:
         minute_w = 2 * char_w
         total_w = hour_w + colon_w + minute_w
 
-        clock_x = self.cols - total_w - RIGHT_PAD
+        clock_x = self.cols - total_w - RIGHT_PAD + sx
 
         # Clear clock area so scrolling notice doesn't bleed through
-        for cy in range(23, 32):
+        for cy in range(23 + sy, 32 + sy):
             for cx in range(max(0, clock_x - 2), self.cols):
-                self.canvas.SetPixel(cx, cy, 0, 0, 0)
+                if 0 <= cy < 32:
+                    self.canvas.SetPixel(cx, cy, 0, 0, 0)
 
         x = clock_x
-        baseline = 31
+        baseline = 31 + sy
 
         # Hour digits — render one at a time for tight spacing
         for ch in hour:
@@ -210,8 +228,8 @@ class MatrixRenderer:
         # 2×2 colon dots — flush against digits
         for dy in (0, 1):
             for dx in (0, 1):
-                self.canvas.SetPixel(x + dx, 25 + dy, r, g, b)
-                self.canvas.SetPixel(x + dx, 29 + dy, r, g, b)
+                self.canvas.SetPixel(x + dx, 25 + sy + dy, r, g, b)
+                self.canvas.SetPixel(x + dx, 29 + sy + dy, r, g, b)
         x += 2
 
         # Minute digits
