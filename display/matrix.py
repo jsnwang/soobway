@@ -133,7 +133,7 @@ class MatrixRenderer:
     def _draw_bus_row(self, arrivals: list[dict], y_offset: int):
         """Draw bus row: Q98 15m          8m  (red if delayed)"""
         white = graphics.Color(255, 255, 255)
-        dim = graphics.Color(200, 200, 200)
+        dim = graphics.Color(160, 160, 160)
         bus_color = graphics.Color(0, 119, 187)
 
         # "Q98" label in 5x8
@@ -160,7 +160,7 @@ class MatrixRenderer:
 
     def _draw_clock(self):
         """Draw tiny clock in bottom-right corner."""
-        dim = graphics.Color(140, 140, 140)
+        dim = graphics.Color(100, 100, 100)
         clock_str = _time.strftime("%H:%M")
         clock_width = len(clock_str) * 5
         graphics.DrawText(self.canvas, self.font_sm, self.cols - clock_width, 31, dim, clock_str)
