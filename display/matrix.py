@@ -213,7 +213,7 @@ class MatrixRenderer:
 
         # Clear clock area so scrolling notice doesn't bleed through
         for cy in range(23 + sy, 32 + sy):
-            for cx in range(max(0, clock_x - 2), self.cols):
+            for cx in range(max(0, clock_x - 1), self.cols):
                 if 0 <= cy < 32:
                     self.canvas.SetPixel(cx, cy, 0, 0, 0)
 
