@@ -147,20 +147,52 @@ class MatrixRenderer:
         mins = first["minutes_away"]
         time_str = "Now" if mins == 0 else f"{mins}m"
         time_color = graphics.Color(*RED) if first.get("delayed") else white
-        graphics.DrawText(self.canvas, self.font_md, TIME_X, y_offset + 10, time_color, time_str)
+        graphics.DrawText(self.canvas, self.font_lg, TIME_X, y_offset + 12, time_color, time_str)
 
-        # Next bus — right-aligned in 5x8, yellow (red if delayed)
+        # Next bus — right-aligned in 6x10, yellow (red if delayed)
         if len(arrivals) >= 2:
             nxt = arrivals[1]
             nxt_str = f"{nxt['minutes_away']}m"
-            nxt_width = len(nxt_str) * 5
+            nxt_width = len(nxt_str) * 6
             nxt_x = self.cols - nxt_width - RIGHT_PAD
             nxt_color = graphics.Color(*RED) if nxt.get("delayed") else graphics.Color(*YELLOW)
-            graphics.DrawText(self.canvas, self.font_md, nxt_x, y_offset + 10, nxt_color, nxt_str)
+            graphics.DrawText(self.canvas, self.font_lg, nxt_x, y_offset + 12, nxt_color, nxt_str)
 
     def _draw_clock(self):
-        """Draw tiny clock in bottom-right corner."""
-        dim = graphics.Color(100, 100, 100)
+        """Draw 7-segment style clock in bottom-right corner."""
+        r, g, b = 180, 180, 180
         clock_str = _time.strftime("%H:%M")
-        clock_width = len(clock_str) * 5
-        graphics.DrawText(self.canvas, self.font_sm, self.cols - clock_width, 31, dim, clock_str)
+
+        # 3×7 pixel bitmaps — proper 7-segment with symmetric upper/lower halves
+        # Row 0: top bar, rows 1-2: upper verticals, row 3: middle bar,
+        # rows 4-5: lower verticals, row 6: bottom bar
+        SEGS = {
+            "0": [0b111, 0b101, 0b101, 0b000, 0b101, 0b101, 0b111],
+            "1": [0b010, 0b010, 0b010, 0b000, 0b010, 0b010, 0b010],
+            "2": [0b111, 0b001, 0b001, 0b111, 0b100, 0b100, 0b111],
+            "3": [0b111, 0b001, 0b001, 0b111, 0b001, 0b001, 0b111],
+            "4": [0b000, 0b101, 0b101, 0b111, 0b001, 0b001, 0b000],
+            "5": [0b111, 0b100, 0b100, 0b111, 0b001, 0b001, 0b111],
+            "6": [0b111, 0b100, 0b100, 0b111, 0b101, 0b101, 0b111],
+            "7": [0b111, 0b001, 0b001, 0b000, 0b001, 0b001, 0b001],
+            "8": [0b111, 0b101, 0b101, 0b111, 0b101, 0b101, 0b111],
+            "9": [0b111, 0b101, 0b101, 0b111, 0b001, 0b001, 0b111],
+            ":": [0b0, 0b0, 0b1, 0b0, 0b1, 0b0, 0b0],
+        }
+
+        # Total width: 4 digits × (3+1) + colon (1+1) - trailing gap = 17px
+        total_w = 4 * 4 + 1 + 1 - 1
+        x0 = self.cols - total_w - RIGHT_PAD
+        y0 = 25  # 7px tall → rows 25-31
+
+        cx = x0
+        for ch in clock_str:
+            bitmap = SEGS.get(ch)
+            if bitmap is None:
+                continue
+            w = 1 if ch == ":" else 3
+            for dy, row in enumerate(bitmap):
+                for dx in range(w):
+                    if row & (1 << (w - 1 - dx)):
+                        self.canvas.SetPixel(cx + dx, y0 + dy, r, g, b)
+            cx += w + 1
