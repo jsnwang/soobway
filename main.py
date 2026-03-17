@@ -13,11 +13,10 @@ def main():
 
     while True:
         subway_arrivals = []
-        for stop in config.SUBWAY_STOPS:
+        for feed in config.SUBWAY_FEEDS:
             subway_arrivals.extend(subway.get_arrivals(
-                url=stop["url"],
-                stop_id=stop["stop_id"],
-                route_id=stop["route_id"],
+                url=feed["url"],
+                stop_id=feed["stop_id"],
             ))
         subway_arrivals.sort(key=lambda x: x["minutes_away"])
 

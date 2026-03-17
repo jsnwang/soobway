@@ -24,25 +24,26 @@ MATRIX_BRIGHTNESS = int(os.getenv("MATRIX_BRIGHTNESS", "50"))
 REFRESH_INTERVAL = int(os.getenv("REFRESH_INTERVAL", "30"))
 
 # ---------------------------------------------------------------------------
-# Subway stops
+# Subway feeds
+# Each entry is a GTFS-RT feed that may contain trains stopping at our station.
 # url: MTA GTFS-RT feed endpoint (no API key needed)
 # stop_id: GTFS stop ID + direction suffix — 'S' = southbound = towards Manhattan
 #   To find your stop ID: download stops.txt from https://api.mta.info/#/subwayRealTimeFeeds
 #   and search for your station name. Append 'S' for Manhattan-bound.
-# route_id: exactly as it appears in the feed ('M', 'R', etc.)
+# All trains stopping at the given stop_id are returned (no route filter).
 # ---------------------------------------------------------------------------
-SUBWAY_STOPS = [
+SUBWAY_FEEDS = [
     {
         "url": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-bdfm",
-        "stop_id": "G10S",  # 63 Dr-Rego Park, southbound (Manhattan-bound)
-        "route_id": "M",
-        "name": "M to Manhattan",
+        "stop_id": "G10S",  # 63 Dr-Rego Park — covers B, D, F, M
     },
     {
         "url": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-nqrw",
-        "stop_id": "G10S",  # 63 Dr-Rego Park, southbound (Manhattan-bound)
-        "route_id": "R",
-        "name": "R to Manhattan",
+        "stop_id": "G10S",  # 63 Dr-Rego Park — covers N, Q, R, W
+    },
+    {
+        "url": "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-ace",
+        "stop_id": "G10S",  # 63 Dr-Rego Park — covers A, C, E
     },
 ]
 
