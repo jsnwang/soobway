@@ -159,8 +159,32 @@ class MatrixRenderer:
             graphics.DrawText(self.canvas, self.font_lg, nxt_x, y_offset + 12, nxt_color, nxt_str)
 
     def _draw_clock(self):
-        """Draw clock in bottom-right corner using 6x10 font."""
-        dim = graphics.Color(180, 180, 180)
-        clock_str = _time.strftime("%H:%M")
-        clock_width = len(clock_str) * 6
-        graphics.DrawText(self.canvas, self.font_lg, self.cols - clock_width - RIGHT_PAD, 31, dim, clock_str)
+        """Draw clock in bottom-right corner: digits in 6x10, hand-drawn 2×2 colon."""
+        r, g, b = 180, 180, 180
+        dim = graphics.Color(r, g, b)
+
+        hour = str(int(_time.strftime("%I")))  # 12-hour, no leading zero
+        minute = _time.strftime("%M")
+
+        # Layout: [hour][gap][::][gap][minute] right-aligned
+        hour_w = len(hour) * 6
+        colon_w = 4  # 1px gap + 2px dots + 1px gap
+        minute_w = 12  # always 2 digits × 6px
+        total_w = hour_w + colon_w + minute_w
+
+        x = self.cols - total_w - RIGHT_PAD
+        baseline = 31
+
+        # Hour digits
+        graphics.DrawText(self.canvas, self.font_lg, x, baseline, dim, hour)
+        x += hour_w + 1  # 1px gap before dots
+
+        # 2×2 colon dots — vertically centered in 10px font (spans y=22–31)
+        for dy in (0, 1):
+            for dx in (0, 1):
+                self.canvas.SetPixel(x + dx, 24 + dy, r, g, b)  # upper dot
+                self.canvas.SetPixel(x + dx, 28 + dy, r, g, b)  # lower dot
+        x += 3  # 2px dots + 1px gap after
+
+        # Minute digits
+        graphics.DrawText(self.canvas, self.font_lg, x, baseline, dim, minute)
