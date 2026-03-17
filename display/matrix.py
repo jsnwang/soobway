@@ -165,7 +165,7 @@ class MatrixRenderer:
 
     def _draw_notice(self, notice: str):
         """Draw scrolling notice text in the bottom row, left of clock."""
-        yellow = graphics.Color(*YELLOW)
+        yellow = graphics.Color(160, 130, 6)
         char_w = 6  # font_clock character width
         text_width = len(notice) * char_w
 
@@ -179,7 +179,7 @@ class MatrixRenderer:
 
     def _draw_clock(self):
         """Draw clock in bottom-right corner: digits in 6x9 with tight spacing, hand-drawn 2×2 colon."""
-        r, g, b = 180, 180, 180
+        r, g, b = 120, 120, 120
         dim = graphics.Color(r, g, b)
 
         hour = str(int(_time.strftime("%I")))  # 12-hour, no leading zero
