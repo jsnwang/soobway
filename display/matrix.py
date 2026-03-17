@@ -202,11 +202,11 @@ class MatrixRenderer:
         hour = str(int(_time.strftime("%I")))  # 12-hour, no leading zero
         minute = _time.strftime("%M")
 
-        # Tight layout: digits at 5px pitch, colon 2px with no extra gaps
+        # Layout: digits at 5px pitch, 1px gap before colon, 1px gap between minute digits
         char_w = 5
         hour_w = len(hour) * char_w
-        colon_w = 2  # just the 2px dots, no gaps
-        minute_w = 2 * char_w
+        colon_w = 3  # 1px gap + 2px dots
+        minute_w = 2 * char_w + 1  # 1px extra gap between minute digits
         total_w = hour_w + colon_w + minute_w
 
         clock_x = self.cols - total_w - RIGHT_PAD + sx
@@ -220,19 +220,21 @@ class MatrixRenderer:
         x = clock_x
         baseline = 31 + sy
 
-        # Hour digits — render one at a time for tight spacing
+        # Hour digits
         for ch in hour:
             graphics.DrawText(self.canvas, self.font_clock, x, baseline, dim, ch)
             x += char_w
 
-        # 2×2 colon dots — flush against digits
+        x += 1  # 1px gap before colon
+
+        # 2×2 colon dots
         for dy in (0, 1):
             for dx in (0, 1):
                 self.canvas.SetPixel(x + dx, 25 + sy + dy, r, g, b)
                 self.canvas.SetPixel(x + dx, 29 + sy + dy, r, g, b)
         x += 2
 
-        # Minute digits
-        for ch in minute:
-            graphics.DrawText(self.canvas, self.font_clock, x, baseline, dim, ch)
-            x += char_w
+        # Minute digits with 1px extra gap between them
+        graphics.DrawText(self.canvas, self.font_clock, x, baseline, dim, minute[0])
+        x += char_w + 1
+        graphics.DrawText(self.canvas, self.font_clock, x, baseline, dim, minute[1])
