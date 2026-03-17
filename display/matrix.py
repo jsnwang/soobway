@@ -20,6 +20,10 @@ TIME_X = 18
 
 # Delay color
 RED = (255, 40, 40)
+YELLOW = (252, 204, 10)
+
+# Right padding for next-time text
+RIGHT_PAD = 2
 
 
 def _make_options(rows: int = 32, cols: int = 64, chain: int = 1, brightness: int = 50) -> "RGBMatrixOptions":
@@ -102,17 +106,13 @@ class MatrixRenderer:
         time_color = graphics.Color(*RED) if first.get("delayed") else white
         graphics.DrawText(self.canvas, self.font_lg, TIME_X, y_offset + 13, time_color, time_str)
 
-        # Next train — right-aligned in 6x10, same baseline
+        # Next train — right-aligned in 6x10, yellow (red if delayed)
         if len(arrivals) >= 2:
             nxt = arrivals[1]
             nxt_str = f"{nxt['minutes_away']}m"
             nxt_width = len(nxt_str) * 6
-            nxt_x = self.cols - nxt_width
-            if nxt.get("delayed"):
-                nxt_color = graphics.Color(*RED)
-            else:
-                nxt_r, nxt_g, nxt_b = LINE_COLORS.get(nxt["line"], (100, 100, 100))
-                nxt_color = graphics.Color(nxt_r, nxt_g, nxt_b)
+            nxt_x = self.cols - nxt_width - RIGHT_PAD
+            nxt_color = graphics.Color(*RED) if nxt.get("delayed") else graphics.Color(*YELLOW)
             graphics.DrawText(self.canvas, self.font_lg, nxt_x, y_offset + 13, nxt_color, nxt_str)
 
     def _draw_bus_row(self, arrivals: list[dict], y_offset: int):
@@ -134,13 +134,13 @@ class MatrixRenderer:
         time_color = graphics.Color(*RED) if first.get("delayed") else white
         graphics.DrawText(self.canvas, self.font_md, TIME_X, y_offset + 10, time_color, time_str)
 
-        # Next bus — right-aligned in 5x8, same baseline
+        # Next bus — right-aligned in 5x8, yellow (red if delayed)
         if len(arrivals) >= 2:
             nxt = arrivals[1]
             nxt_str = f"{nxt['minutes_away']}m"
             nxt_width = len(nxt_str) * 5
-            nxt_x = self.cols - nxt_width
-            nxt_color = graphics.Color(*RED) if nxt.get("delayed") else dim
+            nxt_x = self.cols - nxt_width - RIGHT_PAD
+            nxt_color = graphics.Color(*RED) if nxt.get("delayed") else graphics.Color(*YELLOW)
             graphics.DrawText(self.canvas, self.font_md, nxt_x, y_offset + 10, nxt_color, nxt_str)
 
     def _draw_clock(self):
