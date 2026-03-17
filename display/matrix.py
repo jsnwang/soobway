@@ -79,6 +79,9 @@ class MatrixRenderer:
         self.font_md = graphics.Font()
         self.font_md.LoadFont(os.path.join(FONT_DIR, "5x8.bdf"))
 
+        self.font_clock = graphics.Font()
+        self.font_clock.LoadFont(os.path.join(FONT_DIR, "6x9.bdf"))
+
         self.font_sm = graphics.Font()
         self.font_sm.LoadFont(os.path.join(FONT_DIR, "4x6.bdf"))
 
@@ -159,7 +162,7 @@ class MatrixRenderer:
             graphics.DrawText(self.canvas, self.font_lg, nxt_x, y_offset + 12, nxt_color, nxt_str)
 
     def _draw_clock(self):
-        """Draw clock in bottom-right corner: digits in 5x8, hand-drawn 2×2 colon."""
+        """Draw clock in bottom-right corner: digits in 6x9, hand-drawn 2×2 colon."""
         r, g, b = 180, 180, 180
         dim = graphics.Color(r, g, b)
 
@@ -167,19 +170,19 @@ class MatrixRenderer:
         minute = _time.strftime("%M")
 
         # Layout: [hour][gap][::][gap][minute] right-aligned
-        hour_w = len(hour) * 5
+        hour_w = len(hour) * 6
         colon_w = 4  # 1px gap + 2px dots + 1px gap
-        minute_w = 10  # always 2 digits × 5px
+        minute_w = 12  # always 2 digits × 6px
         total_w = hour_w + colon_w + minute_w
 
         x = self.cols - total_w - RIGHT_PAD
         baseline = 31
 
         # Hour digits
-        graphics.DrawText(self.canvas, self.font_md, x, baseline, dim, hour)
+        graphics.DrawText(self.canvas, self.font_clock, x, baseline, dim, hour)
         x += hour_w + 1  # 1px gap before dots
 
-        # 2×2 colon dots — vertically centered in 8px font (spans y=24–31)
+        # 2×2 colon dots — vertically centered in 9px font (spans y=23–31)
         for dy in (0, 1):
             for dx in (0, 1):
                 self.canvas.SetPixel(x + dx, 25 + dy, r, g, b)  # upper dot
@@ -187,4 +190,4 @@ class MatrixRenderer:
         x += 3  # 2px dots + 1px gap after
 
         # Minute digits
-        graphics.DrawText(self.canvas, self.font_md, x, baseline, dim, minute)
+        graphics.DrawText(self.canvas, self.font_clock, x, baseline, dim, minute)
