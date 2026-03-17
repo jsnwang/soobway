@@ -23,7 +23,7 @@ RED = (255, 40, 40)
 YELLOW = (252, 204, 10)
 
 # Right padding for next-time text
-RIGHT_PAD = 1
+RIGHT_PAD = 2
 
 
 def _make_options(rows: int = 32, cols: int = 64, chain: int = 1, brightness: int = 50) -> "RGBMatrixOptions":
@@ -205,7 +205,7 @@ class MatrixRenderer:
         # Layout: digits at 5px pitch, 1px gap before colon, 1px gap between minute digits
         char_w = 5
         hour_w = len(hour) * char_w
-        colon_w = 3  # 1px gap + 2px dots
+        colon_w = 4  # 1px gap + 2px dots + 1px gap
         minute_w = 2 * char_w + 1  # 1px extra gap between minute digits
         total_w = hour_w + colon_w + minute_w
 
