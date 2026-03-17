@@ -42,7 +42,7 @@ def _draw_filled_circle(canvas, cx, cy, radius, r, g, b):
     """Draw a filled circle by setting individual pixels."""
     for dy in range(-radius, radius + 1):
         for dx in range(-radius, radius + 1):
-            if dx * dx + dy * dy <= radius * radius:
+            if dx * dx + dy * dy < radius * radius:
                 canvas.SetPixel(cx + dx, cy + dy, r, g, b)
 
 
@@ -96,8 +96,8 @@ class MatrixRenderer:
         _draw_filled_circle(self.canvas, cx, cy, 7, r, g, b)
 
         # White letter centered inside circle (5x8 font)
-        # Circle diameter 15px, char 5px wide: (15-5)/2 = 5px each side
-        letter_x = cx - 2
+        # Char is 4px wide visually; shift right 1px to center
+        letter_x = cx - 1
         letter_y = cy + 4
         graphics.DrawText(self.canvas, self.font_md, letter_x, letter_y, white, line)
 
