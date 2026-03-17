@@ -38,12 +38,26 @@ def _make_options(rows: int = 32, cols: int = 64, chain: int = 1, brightness: in
     return options
 
 
-def _draw_filled_circle(canvas, cx, cy, radius, r, g, b):
-    """Draw a filled circle by setting individual pixels."""
-    for dy in range(-radius, radius + 1):
-        for dx in range(-radius, radius + 1):
-            if dx * dx + dy * dy < radius * radius:
-                canvas.SetPixel(cx + dx, cy + dy, r, g, b)
+def _draw_subway_icon(canvas, x, y, r, g, b):
+    """Draw a 12×12 filled circle at top-left corner (x, y)."""
+    # Hand-tuned 12×12 circle bitmap for clean pixel edges
+    rows = [
+        (3, 9),   # row 0:    ··xxx xxx··
+        (2, 10),  # row 1:   ·xxxxxxxx·
+        (1, 11),  # row 2:  ·xxxxxxxxxx·
+        (1, 11),  # row 3:  ·xxxxxxxxxx·
+        (0, 12),  # row 4: xxxxxxxxxxxx
+        (0, 12),  # row 5: xxxxxxxxxxxx
+        (0, 12),  # row 6: xxxxxxxxxxxx
+        (0, 12),  # row 7: xxxxxxxxxxxx
+        (1, 11),  # row 8:  ·xxxxxxxxxx·
+        (1, 11),  # row 9:  ·xxxxxxxxxx·
+        (2, 10),  # row 10:  ·xxxxxxxx·
+        (3, 9),   # row 11:   ··xxx xxx··
+    ]
+    for dy, (x0, x1) in enumerate(rows):
+        for dx in range(x0, x1):
+            canvas.SetPixel(x + dx, y + dy, r, g, b)
 
 
 class MatrixRenderer:
@@ -91,14 +105,14 @@ class MatrixRenderer:
         line = first["line"]
         r, g, b = LINE_COLORS.get(line, (255, 255, 255))
 
-        # Filled circle — radius 7, center at (9, y+8)
-        cx, cy = 9, y_offset + 8
-        _draw_filled_circle(self.canvas, cx, cy, 7, r, g, b)
+        # 12×12 circle icon at (2, y+2)
+        icon_x, icon_y = 2, y_offset + 2
+        _draw_subway_icon(self.canvas, icon_x, icon_y, r, g, b)
 
-        # White letter centered inside circle (5x8 font)
-        # Char is 4px wide visually; shift right 1px to center
-        letter_x = cx - 1
-        letter_y = cy + 4
+        # Letter centered in 12×12 icon: 4px wide → 4px pad each side, 6px tall → 3px pad each side
+        # 5x8 font baseline = top + ascent. Glyph is 4w×6h.
+        letter_x = icon_x + 4
+        letter_y = icon_y + 9  # 3px top pad + 6px glyph = baseline at y+9
         graphics.DrawText(self.canvas, self.font_md, letter_x, letter_y, white, line)
 
         # Primary time in 6x10, vertically centered with circle (baseline y=13)
