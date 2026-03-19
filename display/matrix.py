@@ -205,7 +205,7 @@ class MatrixRenderer:
         # Layout: digits at 5px pitch, 1px gap before colon, 1px gap between minute digits
         char_w = 5
         hour_w = len(hour) * char_w
-        colon_w = 4  # 1px gap + 2px dots + 1px gap
+        colon_w = 5  # 1px gap + 2px dots + 1px gap + 1px gap
         minute_w = 2 * char_w + 1  # 1px extra gap between minute digits
         total_w = hour_w + colon_w + minute_w
 
@@ -234,7 +234,8 @@ class MatrixRenderer:
                 self.canvas.SetPixel(x + dx, 29 + sy + dy, r, g, b)
         x += 2
 
-        # Minute digits with 1px extra gap between them
+        # Minute digits with 1px extra gap before first and between them
+        x += 1  # 1px gap after colon
         graphics.DrawText(self.canvas, self.font_clock, x, baseline, dim, minute[0])
         x += char_w + 1
         graphics.DrawText(self.canvas, self.font_clock, x, baseline, dim, minute[1])
